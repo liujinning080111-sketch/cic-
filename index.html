@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
+    <title>门条</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
+            font-family: sans-serif;
+            display: flex;
+            justify-content: center;
+        }
+
+        #app-container {
+            position: relative;
+            width: 100%;
+            max-width: 480px;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .bg-image {
+            width: 100%;
+            display: block;
+        }
+
+        .page {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            background: #fff;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        /* --- 第一页：输入姓名界面的样式 --- */
+        #page-start {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        #initial-name {
+            width: 80%;
+            padding: 12px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        #btn-begin {
+            width: 85%;
+            padding: 12px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        /* --- 表格输入框样式 --- */
+        .input-group {
+            position: absolute;
+            left: 51.1%;
+            width: 45%;
+            height: 2.5%;
+            border: none;
+            background: transparent;
+            font-size: 14px;
+            font-weight: normal;
+            color: #111; 
+            outline: none;
+            padding-left: 5px;
+
+            /* 【调试染色：表格输入框】想看位置请去掉下面两行的注释 */
+            /* background: rgba(0, 140, 255, 0.2) !important; */
+            /* border: 1px solid blue !important; */
+        }
+        
+        #input-name { top: 48.7%; }
+        #input-info { top: 52.8%; }
+        #input-teacher { top: 56.95%; }
+        #input-date { top: 61%; }
+
+        /* --- 顶部文字样式 (www.cic258.org 上方位置) --- */
+        .input-header-box {
+            position: absolute;
+            display: block; 
+            top: 7.35%; 
+            left: 8.85%;
+            width: 80%;
+            height: 4%;
+            background: transparent;
+            border: none;
+            outline: none;
+            text-align: center;
+            font-size: 18px;
+            font-weight: normal;
+            color: #333; 
+            z-index: 10;
+
+            /* 【调试染色：顶部文字】想看位置请去掉下面两行的注释 */
+            /* background: rgba(255, 0, 0, 0.2) !important; */
+            /* border: 1px solid red !important; */
+        }
+
+        #display-header {
+            pointer-events: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1.2;
+        }
+
+        /* --- 按钮热区 --- */
+        .btn-hotspot {
+            position: absolute;
+            cursor: pointer;
+            background: transparent;
+            z-index: 999; 
+
+            /* 【调试染色：按钮热区】想看位置请去掉下面两行的注释 */
+             background: rgba(0, 255, 0, 0.3) !important; 
+            /* border: 1px solid green !important; */
+        }
+
+        #btn-submit {
+            bottom: 10.4%;
+            left: 3.4%;
+            width: 93.8%;
+            height: 4.8%;
+        }
+
+        #btn-close {
+            top: 54.8%;
+            left: 45%;
+            width: 13.5%;
+            height: 5%;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="app-container">
+        
+        <div id="page-start" class="page active">
+            <h2 style="margin-bottom: 30px; color: #333;">信息录入</h2>
+            <input type="text" id="initial-name" placeholder="请输入学生姓名">
+            <button id="btn-begin">生成门条</button>
+        </div>
+
+        <div id="page-form" class="page">
+            <img src="form.png" alt="表单背景" class="bg-image">
+            
+            <input type="text" id="input-extra" class="input-header-box" readonly>
+
+            <input type="text" id="input-name" class="input-group" value="[JQ210512]">
+            <input type="text" id="input-info" class="input-group" value="男，11年级">
+            <input type="text" id="input-teacher" class="input-group" value="王静">
+            <input type="text" id="input-date" class="input-group" value="2025-">
+
+            <div id="btn-submit" class="btn-hotspot"></div>
+        </div>
+
+        <div id="page-result" class="page">
+            <img src="result.png" alt="结果背景" class="bg-image">
+            <div id="display-header" class="input-header-box"></div>
+            <div id="btn-close" class="btn-hotspot"></div>
+        </div>
+
+    </div>
+
+    <script>
+        // 获取页面
+        const pageStart = document.getElementById('page-start');
+        const pageForm = document.getElementById('page-form');
+        const pageResult = document.getElementById('page-result');
+
+        // 获取交互元素
+        const initialNameInput = document.getElementById('initial-name');
+        const btnBegin = document.getElementById('btn-begin');
+        const btnSubmit = document.getElementById('btn-submit');
+        const btnClose = document.getElementById('btn-close');
+
+        const inputExtra = document.getElementById('input-extra');
+        const displayHeader = document.getElementById('display-header');
+
+        // 逻辑1：点击开始
+        btnBegin.addEventListener('click', function() {
+            const name = initialNameInput.value.trim();
+            if(!name) { alert("请输入姓名"); return; }
+            
+            // 拼接文字并填入顶部
+            inputExtra.value = name + "门条";
+            
+            // 跳转
+            pageStart.classList.remove('active');
+            pageForm.classList.add('active');
+        });
+
+        // 逻辑2：允许出门
+        btnSubmit.addEventListener('click', function() {
+            // 同步顶部内容到结果页
+            displayHeader.innerText = inputExtra.value;
+
+            pageForm.classList.remove('active');
+            pageResult.classList.add('active');
+            window.scrollTo(0,0);
+        });
+
+        // 逻辑3：关闭返回
+        btnClose.addEventListener('click', function() {
+            pageResult.classList.remove('active');
+            pageStart.classList.add('active');
+            initialNameInput.value = ""; // 清空，方便下次使用
+        });
+
+        // iOS 触摸兼容
+        document.addEventListener('touchstart', function() {}, false);
+    </script>
+</body>
+</html>
